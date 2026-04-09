@@ -1,0 +1,19 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Dev notes (not for public repo)
+process.md
+technical-reference.md
+
+# Reference assets
+ref/
+
+# OS
+.DS_Store
+
+# Env
+.env
+.env.local
