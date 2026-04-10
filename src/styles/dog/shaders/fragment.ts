@@ -46,56 +46,59 @@ fn main(input: FragIn) -> @location(0) vec4f {
   var albedo: vec3f;
 
   if (bt == 0u) {
-    // ── Light (QR background) — near-white warm ──────────────
+    // ── Light (QR background) — near-white ───────────────────
     albedo = vec3f(1.00, 0.98, 0.95) * (0.97 + (n2 - 0.5) * 0.04);
     if (!isTop) { albedo *= 0.85; }
 
   } else if (bt == 1u) {
-    // ── DarkFur — warm golden-orange (shiba / golden retriever)
-    // Body outer: deep warm orange. Inner (low dist): brighter golden.
-    // Top face darkened for QR scannability.
-    let furOuter = vec3f(0.42, 0.18, 0.04);  // deep warm orange — renders ~#C05800
-    let furInner = vec3f(0.55, 0.28, 0.07);  // bright golden    — renders ~#DC8000
-    let normalizedDist = input.distFromCenter / (uniforms.gridSize * 0.5);
-    var baseFur = mix(furInner, furOuter, smoothstep(0.2, 0.8, normalizedDist));
-    baseFur *= (0.92 + n2 * 0.14);
+    // ── Wolf body — cool medium-dark gray ────────────────────
+    // Minecraft wolf: gray body with subtle cool tone variation.
+    let wolfDark  = vec3f(0.24, 0.24, 0.26);  // deep cool gray
+    let wolfMid   = vec3f(0.30, 0.30, 0.33);  // medium gray
+    let wolfLight = vec3f(0.36, 0.36, 0.39);  // lighter fringe
+    var baseFur: vec3f;
+    if (n1 < 0.4) {
+      baseFur = mix(wolfDark, wolfMid, n1 / 0.4);
+    } else {
+      baseFur = mix(wolfMid, wolfLight, (n1 - 0.4) / 0.6);
+    }
+    baseFur *= (0.90 + n2 * 0.18);
 
     if (isTop) {
-      albedo = baseFur * 0.60;  // darkened for QR contrast
+      albedo = baseFur * 0.58;  // darkened for QR scannability
     } else {
       albedo = baseFur;
     }
 
   } else if (bt == 2u) {
-    // ── Brown — muzzle / inner face, warm tan-brown ───────────
-    // Lighter than main fur but still dark enough for QR (top face).
-    let muzzleBase = vec3f(0.50, 0.26, 0.08);  // warm tan-brown
-    var muzzle = muzzleBase * (0.90 + n1 * 0.16);
+    // ── Wolf muzzle — lighter warm-gray marking ───────────────
+    // Minecraft wolf has a distinct lighter area around the muzzle.
+    let muzzleBase = vec3f(0.52, 0.50, 0.46);  // light warm-gray
+    var muzzle = muzzleBase * (0.88 + n1 * 0.18);
     if (isTop) {
-      albedo = muzzle * 0.62;
+      albedo = muzzle * 0.38;  // keep dark for QR contrast
     } else {
       albedo = muzzle;
     }
 
   } else if (bt == 3u) {
     // ── EyeRing — dark iris / pupil, near-black ──────────────
-    let eyeDark = vec3f(0.06, 0.04, 0.02);
+    let eyeDark = vec3f(0.06, 0.05, 0.04);
     if (isTop) {
-      // Tiny wet-eye specular highlight
       let hl = smoothstep(0.55, 0.72, 1.0 - length(input.uv - vec2f(0.28, 0.26)));
-      albedo = eyeDark + vec3f(0.20, 0.16, 0.12) * hl;
+      albedo = eyeDark + vec3f(0.18, 0.14, 0.10) * hl;
     } else {
       albedo = eyeDark * 0.75;
     }
 
   } else if (bt == 4u) {
-    // ── EyeWhite — white sclera inside eye zone ───────────────
+    // ── EyeWhite — white sclera ───────────────────────────────
     albedo = vec3f(0.96, 0.94, 0.90) * (0.97 + (n2 - 0.5) * 0.04);
     if (!isTop) { albedo *= 0.80; }
 
   } else {
-    // ── Collar — warm red bandana ────────────────────────────
-    let collarBase = vec3f(0.52, 0.07, 0.05);  // deep red — renders ~#C01800
+    // ── Collar — deep red (tamed wolf collar) ─────────────────
+    let collarBase = vec3f(0.52, 0.07, 0.05);
     albedo = collarBase * (0.92 + n1 * 0.12);
     if (!isTop) { albedo *= 0.72; }
   }

@@ -18,6 +18,7 @@ fn main(@builtin(vertex_index) vi: u32) -> @builtin(position) vec4f {
 export const dogSkyFragment = /* wgsl */`
 @fragment
 fn main() -> @location(0) vec4f {
-  return vec4f(0.969, 0.969, 0.969, 1.0);
+  // Minecraft daytime sky — clear blue
+  return vec4f(0.53, 0.72, 0.95, 1.0);
 }
 `;
