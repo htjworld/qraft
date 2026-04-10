@@ -1,4 +1,25 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
+
+function useMobileKeyboardInset() {
+  const [inset, setInset] = useState(0);
+
+  useEffect(() => {
+    // 터치 디바이스에서만 동작
+    if (navigator.maxTouchPoints === 0) return;
+    const vv = window.visualViewport;
+    if (!vv) return;
+
+    const update = () => {
+      // 레이아웃 뷰포트 - 비주얼 뷰포트 = 키보드 높이 (iOS/Android 공통)
+      setInset(Math.max(0, window.innerHeight - vv.offsetTop - vv.height));
+    };
+
+    vv.addEventListener('resize', update);
+    return () => vv.removeEventListener('resize', update);
+  }, []);
+
+  return inset;
+}
 import { QraftCanvas } from './components/QraftCanvas';
 import { StylePicker } from './components/StylePicker';
 import { UrlInput } from './components/UrlInput';
@@ -11,6 +32,7 @@ export function App() {
   const [url, setUrl] = useState(DEFAULT_URL);
   const [style, setStyle] = useState<QraftStyle>(getInitialStyle);
   const [webGPUError, setWebGPUError] = useState<'insecure' | 'unsupported' | false>(false);
+  const keyboardInset = useMobileKeyboardInset();
 
   const handleUrlChange = useCallback((newUrl: string) => {
     setUrl(newUrl || DEFAULT_URL);
@@ -19,11 +41,12 @@ export function App() {
   return (
     <div style={{
       width: '100vw',
-      height: '100dvh',
+      height: keyboardInset > 0 ? `calc(100dvh - ${keyboardInset}px)` : '100dvh',
       overflow: 'hidden',
       display: 'flex',
       flexDirection: 'column',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+      touchAction: 'none',
     }}>
       {/* Header — StylePicker */}
       <div style={{

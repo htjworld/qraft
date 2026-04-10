@@ -35,7 +35,7 @@ export const CHERRY_CONSTANTS: StyleConstants = {
   viewScale3D: 1.6,
   viewScale2D: 2.1,
   lerpSpeed:   4.0,
-  yOffset3D:  -0.22,   // shift scene down in 3D so tree canopy center ≈ canvas center
+  yOffset3D:  -0.25,   // shift scene down in 3D so tree canopy center ≈ canvas center
   xOffset3D:   0.0,
   yOffset2D:   0.08,
   xOffset2D:   0.015,
