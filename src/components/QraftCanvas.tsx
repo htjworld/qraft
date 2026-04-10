@@ -28,7 +28,15 @@ export function QraftCanvas({ url, style, onWebGPUUnsupported }: QraftCanvasProp
 
     (async () => {
       try {
-        if (!navigator.gpu) { onWebGPUUnsupported?.(); return; }
+        if (!navigator.gpu) {
+          const isInsecure = location.protocol !== 'https:' && location.hostname !== 'localhost';
+          console.error(isInsecure
+            ? 'WebGPU requires HTTPS or localhost'
+            : 'navigator.gpu is undefined — enable hardware acceleration in browser settings'
+          );
+          onWebGPUUnsupported?.();
+          return;
+        }
         await renderer.init(canvas, style);
         if (cancelled) return;
 

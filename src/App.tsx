@@ -10,7 +10,7 @@ const DEFAULT_URL = 'https://github.com/htjworld/qraft';
 export function App() {
   const [url, setUrl] = useState(DEFAULT_URL);
   const [style, setStyle] = useState<QraftStyle>(getInitialStyle);
-  const [webGPUError, setWebGPUError] = useState(false);
+  const [webGPUError, setWebGPUError] = useState<'insecure' | 'unsupported' | false>(false);
 
   const handleUrlChange = useCallback((newUrl: string) => {
     setUrl(newUrl || DEFAULT_URL);
@@ -51,18 +51,35 @@ export function App() {
             background: '#f5f5f5',
           }}>
             <span style={{ fontSize: 44 }}>😢</span>
-            <h2 style={{ margin: 0, fontSize: 20, fontWeight: 600, color: '#222' }}>
-              WebGPU not supported
-            </h2>
-            <p style={{ margin: 0, fontSize: 14, color: '#666', maxWidth: 300, lineHeight: 1.6 }}>
-              Please use Chrome 113+, Edge 113+, or Safari 18+.
-            </p>
+            {webGPUError === 'insecure' ? (
+              <>
+                <h2 style={{ margin: 0, fontSize: 20, fontWeight: 600, color: '#222' }}>
+                  HTTPS required
+                </h2>
+                <p style={{ margin: 0, fontSize: 14, color: '#666', maxWidth: 300, lineHeight: 1.6 }}>
+                  WebGPU only works on HTTPS. Please open the deployed URL instead of a local file.
+                </p>
+              </>
+            ) : (
+              <>
+                <h2 style={{ margin: 0, fontSize: 20, fontWeight: 600, color: '#222' }}>
+                  WebGPU not available
+                </h2>
+                <p style={{ margin: 0, fontSize: 14, color: '#666', maxWidth: 300, lineHeight: 1.6 }}>
+                  Chrome 113+ is required. If you're on a supported browser, try enabling hardware acceleration in{' '}
+                  <code style={{ fontSize: 13 }}>Settings → System</code>.
+                </p>
+              </>
+            )}
           </div>
         ) : (
           <QraftCanvas
             url={url}
             style={style}
-            onWebGPUUnsupported={() => setWebGPUError(true)}
+            onWebGPUUnsupported={() => {
+              const isInsecure = location.protocol !== 'https:' && location.hostname !== 'localhost';
+              setWebGPUError(isInsecure ? 'insecure' : 'unsupported');
+            }}
           />
         )}
       </div>
