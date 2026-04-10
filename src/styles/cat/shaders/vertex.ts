@@ -113,6 +113,7 @@ fn main(@builtin(vertex_index) vi: u32) -> VertOut {
   let rx_z = localPos.y * sx2 + ry_z * cx2;
 
   let viewScale = mix(VIEW_SCALE_3D, VIEW_SCALE_2D, uniforms.progress);
+  let sizeScale = 33.0 / uniforms.gridSize;
   let finalPos = vec3f(ry_x, rx_y, rx_z) * viewScale;
 
   let distFromCenter = length(vec2f(col - uniforms.gridSize * 0.5, row - uniforms.gridSize * 0.5));
@@ -120,7 +121,7 @@ fn main(@builtin(vertex_index) vi: u32) -> VertOut {
   var out: VertOut;
   let xOff = mix(X_OFFSET_3D, X_OFFSET_2D, uniforms.progress);
   let yOff = mix(Y_OFFSET_3D, Y_OFFSET_2D, uniforms.progress);
-  out.pos = vec4f((finalPos.x + xOff) / uniforms.aspectRatio, finalPos.y + yOff, finalPos.z * 0.5 + 0.5, 1.0);
+  out.pos = vec4f((finalPos.x * sizeScale + xOff) / uniforms.aspectRatio, finalPos.y * sizeScale + yOff, finalPos.z * 0.5 + 0.5, 1.0);
   out.col = col;
   out.row = row;
   out.layer = bY / BLOCK_SIZE;

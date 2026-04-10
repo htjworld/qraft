@@ -101,6 +101,7 @@ fn main(@builtin(vertex_index) vi: u32) -> VertOut {
   let rx_z = lp.y*sx + ry_z*cx;
 
   let viewScale = mix(VIEW_SCALE_3D, VIEW_SCALE_2D, uniforms.progress);
+  let sizeScale = 33.0 / uniforms.gridSize;
   let fp        = vec3f(ry_x, rx_y, rx_z) * viewScale;
 
   // Centering offset: shifts scene to canvas center in both 3D and 2D views
@@ -110,7 +111,7 @@ fn main(@builtin(vertex_index) vi: u32) -> VertOut {
   let distFromCenter = length(vec2f(col - uniforms.gridSize*0.5, row - uniforms.gridSize*0.5));
 
   var out: VertOut;
-  out.pos           = vec4f((fp.x + xOff) / uniforms.aspectRatio, fp.y + yOff, fp.z*0.5 + 0.5, 1.0);
+  out.pos           = vec4f((fp.x * sizeScale + xOff) / uniforms.aspectRatio, fp.y * sizeScale + yOff, fp.z*0.5 + 0.5, 1.0);
   out.col           = col;
   out.row           = row;
   out.layer         = bY / BLOCK_SIZE;
