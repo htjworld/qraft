@@ -18,54 +18,61 @@ export function App() {
 
   return (
     <div style={{
-      position: 'relative',
       width: '100vw',
       height: '100dvh',
       overflow: 'hidden',
+      display: 'flex',
+      flexDirection: 'column',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
     }}>
-      {/* Canvas fills the full viewport */}
-      {webGPUError ? (
-        <div style={{
-          width: '100%',
-          height: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: 14,
-          padding: 24,
-          textAlign: 'center',
-          background: '#f5f5f5',
-        }}>
-          <span style={{ fontSize: 44 }}>😢</span>
-          <h2 style={{ margin: 0, fontSize: 20, fontWeight: 600, color: '#222' }}>
-            WebGPU not supported
-          </h2>
-          <p style={{ margin: 0, fontSize: 14, color: '#666', maxWidth: 300, lineHeight: 1.6 }}>
-            Please use Chrome 113+, Edge 113+, or Safari 18+.
-          </p>
-        </div>
-      ) : (
-        <QraftCanvas
-          url={url}
-          style={style}
-          onWebGPUUnsupported={() => setWebGPUError(true)}
-        />
-      )}
-
-      {/* Floating style picker — top-right */}
-      <div style={{ position: 'absolute', top: 20, right: 20, zIndex: 100 }}>
+      {/* Header — StylePicker */}
+      <div style={{
+        flexShrink: 0,
+        display: 'flex',
+        justifyContent: 'flex-end',
+        padding: '16px 20px',
+      }}>
         <StylePicker current={style} onChange={setStyle} />
       </div>
 
-      {/* URL input — floating at bottom center, above canvas */}
+      {/* Canvas — fills remaining space between header and footer */}
+      <div style={{ flex: 1, minHeight: 0, position: 'relative' }}>
+        {webGPUError ? (
+          <div style={{
+            width: '100%',
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 14,
+            padding: 24,
+            textAlign: 'center',
+            background: '#f5f5f5',
+          }}>
+            <span style={{ fontSize: 44 }}>😢</span>
+            <h2 style={{ margin: 0, fontSize: 20, fontWeight: 600, color: '#222' }}>
+              WebGPU not supported
+            </h2>
+            <p style={{ margin: 0, fontSize: 14, color: '#666', maxWidth: 300, lineHeight: 1.6 }}>
+              Please use Chrome 113+, Edge 113+, or Safari 18+.
+            </p>
+          </div>
+        ) : (
+          <QraftCanvas
+            url={url}
+            style={style}
+            onWebGPUUnsupported={() => setWebGPUError(true)}
+          />
+        )}
+      </div>
+
+      {/* Footer — URL input */}
       <div style={{
-        position: 'absolute',
-        bottom: 32,
-        left: '50%',
-        transform: 'translateX(-50%)',
-        zIndex: 100,
+        flexShrink: 0,
+        display: 'flex',
+        justifyContent: 'center',
+        padding: '20px 20px 32px',
       }}>
         <UrlInput onChange={handleUrlChange} />
       </div>
