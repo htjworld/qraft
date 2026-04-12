@@ -5,7 +5,7 @@ export const TRUNK_RADIUS = 2.5;
 export const TRUNK_LAYERS = 12;
 export const MAX_CANOPY_LAYERS = 12;
 export const CANOPY_OUTER_RADIUS_FACTOR = 0.46;
-export const MAX_GRID_SIZE = 41;
+export const MAX_GRID_SIZE = 177;
 export const MAX_BLOCKS = MAX_GRID_SIZE * MAX_GRID_SIZE * 18;
 
 export enum CherryBlockType {

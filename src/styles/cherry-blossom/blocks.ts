@@ -19,7 +19,9 @@ export function generateCherryBlocks(qrMatrix: boolean[][]): BlockData {
   const cx = gridSize / 2;
   const cy = gridSize / 2;
   const canopyOuterRadius = gridSize * CANOPY_OUTER_RADIUS_FACTOR;
-  const cubeH = BLOCK_SIZE;
+  // Scale block height to keep 3D proportions constant in screen space.
+  // Counteracts the sizeScale = 33/gridSize applied in the vertex shader.
+  const cubeH = BLOCK_SIZE * (gridSize / 29);
 
   const positions: number[] = [];
   const heights: number[] = [];

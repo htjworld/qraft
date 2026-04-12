@@ -60,6 +60,18 @@ fn main(@builtin(vertex_index) vi: u32) -> VertOut {
   let localVertIdx = localVi % 6u;
   let qv           = quadVert(localVertIdx);
 
+  // Bottom face (faceIdx == 1) is never visible from this top-down isometric camera.
+  // Rendering it causes z-fighting with the top face of the block below (identical Y).
+  // Discard by outputting a degenerate position outside the clip volume.
+  if (faceIdx == 1u) {
+    var dead: VertOut;
+    dead.pos = vec4f(0.0, 0.0, -1.0, 1.0);
+    dead.col = 0.0; dead.row = 0.0; dead.layer = 0.0;
+    dead.faceNx = 0.0; dead.faceNy = -1.0; dead.faceNz = 0.0;
+    dead.blockType = 0.0; dead.uv = vec2f(0.0); dead.distFromCenter = 0.0;
+    return dead;
+  }
+
   let posData  = blockPositions[blockIdx];
   let col      = posData.x;
   let row      = posData.y;
@@ -81,11 +93,14 @@ fn main(@builtin(vertex_index) vi: u32) -> VertOut {
   else if (faceIdx == 4u) { lp = vec3f(wx + BLOCK_SIZE*0.5,          bY + qv.y*h,  wz + (qv.x-0.5)*BLOCK_SIZE); }
   else                    { lp = vec3f(wx - BLOCK_SIZE*0.5,          bY + qv.y*h,  wz + (qv.x-0.5)*BLOCK_SIZE); }
 
-  // Cherry blossom sway animation
+  // Cherry blossom sway animation.
+  // swayNorm = 29/gridSize keeps world-space amplitude constant across all QR sizes.
+  // Without it, bY grows with gridSize, causing overlap and depth flickering on large QRs.
   if (typeP == 1u && bY > 0.15) {
-    let t  = uniforms.time;
-    lp.x  += sin(t*0.8 + col*0.3 + row*0.2) * 0.002 * bY;
-    lp.z  += sin(t*0.6 + col*0.2 + row*0.4) * 0.0015 * bY;
+    let t        = uniforms.time;
+    let swayNorm = 29.0 / uniforms.gridSize;
+    lp.x  += sin(t*0.8 + col*0.3 + row*0.2) * 0.002  * bY * swayNorm;
+    lp.z  += sin(t*0.6 + col*0.2 + row*0.4) * 0.0015 * bY * swayNorm;
   }
 
   // Isometric rotation lerped toward flat 2D
@@ -101,17 +116,19 @@ fn main(@builtin(vertex_index) vi: u32) -> VertOut {
   let rx_z = lp.y*sx + ry_z*cx;
 
   let viewScale = mix(VIEW_SCALE_3D, VIEW_SCALE_2D, uniforms.progress);
-  let sizeScale = 33.0 / uniforms.gridSize;
+  let sizeScale = 29.0 / uniforms.gridSize;
   let fp        = vec3f(ry_x, rx_y, rx_z) * viewScale;
 
-  // Centering offset: shifts scene to canvas center in both 3D and 2D views
-  let xOff = mix(X_OFFSET_3D, X_OFFSET_2D, uniforms.progress);
-  let yOff = mix(Y_OFFSET_3D, Y_OFFSET_2D, uniforms.progress);
+  // When sizeScale > 1 (small QR), auto-shift scene down so canopy doesn't clip top.
+  // 0.884 = approximate max fp.y of cherry canopy top (canopy front-near corner, viewScale applied).
+  let xOff      = mix(X_OFFSET_3D, X_OFFSET_2D, uniforms.progress);
+  let minYOff3D = -(sizeScale * 0.884 - 1.0) - 0.05;
+  let yOff      = mix(min(Y_OFFSET_3D, minYOff3D), Y_OFFSET_2D, uniforms.progress);
 
   let distFromCenter = length(vec2f(col - uniforms.gridSize*0.5, row - uniforms.gridSize*0.5));
 
   var out: VertOut;
-  out.pos           = vec4f((fp.x * sizeScale + xOff) / uniforms.aspectRatio, fp.y * sizeScale + yOff, fp.z*0.5 + 0.5, 1.0);
+  out.pos           = vec4f((fp.x * sizeScale + xOff) / uniforms.aspectRatio, fp.y * sizeScale + yOff, fp.z * sizeScale * 0.5 + 0.5, 1.0);
   out.col           = col;
   out.row           = row;
   out.layer         = bY / BLOCK_SIZE;

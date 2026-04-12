@@ -55,6 +55,53 @@ QR 스캐너는 dark 모듈과 light 모듈의 **명암 대비**로만 코드를
 - Light 모듈: near-white 유지 (`vec3f >= 0.95`)
 - 두 값을 나란히 놓고 "한눈에 구별되는가" 확인
 
+## ⚠️ WebGPU Vertex Shader — gridSize 대응 필수 규칙
+
+**새 스타일을 만들거나 vertex shader를 수정할 때 반드시 확인할 것.**
+
+QR URL이 길어질수록 gridSize가 커진다 (v3=29 → v10=57 → v20=97 → v40=177).  
+vertex shader에서 gridSize가 커지면 두 가지 문제가 연쇄 발생한다.
+
+### 1. Depth Clipping (블록이 잘려 사라짐)
+
+`sizeScale = 29.0 / uniforms.gridSize` 는 X/Y 화면 좌표에 자동 적용되지만,  
+depth 계산에 빠뜨리면 gridSize가 커질수록 블록이 NDC z 범위 [0,1] 밖으로 나가 하드웨어 클리핑된다.
+
+**잘못된 패턴:**
+```wgsl
+out.pos = vec4f(..., fp.z * 0.5 + 0.5, 1.0);
+```
+
+**올바른 패턴 — sizeScale을 depth에도 적용:**
+```wgsl
+out.pos = vec4f(..., fp.z * sizeScale * 0.5 + 0.5, 1.0);
+```
+
+검증: gridSize=29에서 sizeScale=1이므로 결과 동일. gridSize=57 이상부터 효과.
+
+### 2. Sway Flickering (캐노피 깜빡거림)
+
+`bY` (블록 baseY)는 gridSize에 비례해 커진다 (`cubeH = BLOCK_SIZE * gridSize/29`).  
+sway 진폭이 `0.002 * bY` 형태면 gridSize가 커질수록 월드 공간 진동이 gridSize배 증폭.  
+캐노피에 블록이 밀집된 상태에서 depth 충돌이 급증 → 깜빡거림.
+
+**잘못된 패턴:**
+```wgsl
+lp.x += sin(...) * 0.002 * bY;
+lp.z += sin(...) * 0.0015 * bY;
+```
+
+**올바른 패턴 — gridSize로 정규화:**
+```wgsl
+let swayNorm = 29.0 / uniforms.gridSize;
+lp.x += sin(...) * 0.002 * bY * swayNorm;
+lp.z += sin(...) * 0.0015 * bY * swayNorm;
+```
+
+이렇게 하면 `bY * swayNorm = layer * BLOCK_SIZE` (상수)가 되어 어떤 gridSize에서도 월드 진폭 동일.
+
+---
+
 ## 타겟 사용자
 
 - SNS 프로필에 QR 넣고 싶은 사람
