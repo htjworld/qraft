@@ -18,6 +18,22 @@ function useIsMobile() {
   return mobile;
 }
 
+// iOS에서 키보드 등장 시 visualViewport.height로 실제 가용 높이 추적
+function useViewportHeight(active: boolean) {
+  const [height, setHeight] = useState(
+    () => window.visualViewport?.height ?? window.innerHeight
+  );
+  useEffect(() => {
+    if (!active) return;
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const update = () => setHeight(Math.round(vv.height));
+    vv.addEventListener('resize', update);
+    return () => vv.removeEventListener('resize', update);
+  }, [active]);
+  return height;
+}
+
 const errorBox: React.CSSProperties = {
   width: '100%', height: '100%',
   display: 'flex', flexDirection: 'column',
@@ -30,6 +46,7 @@ export function App() {
   const [style, setStyle] = useState<QraftStyle>(getInitialStyle);
   const [webGPUError, setWebGPUError] = useState<'insecure' | 'unsupported' | false>(false);
   const isMobile = useIsMobile();
+  const vpHeight = useViewportHeight(isMobile);
 
   const handleUrlChange = useCallback((newUrl: string) => {
     setUrl(newUrl || DEFAULT_URL);
@@ -64,17 +81,23 @@ export function App() {
 
   /* ── Mobile layout ─────────────────────────────────────── */
   if (isMobile) {
+    const canvasH = Math.floor(vpHeight * 0.52);
+
     return (
+      // position: fixed + JS height → iOS 키보드 올라와도 문서 스크롤 없음
       <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100vw',
+        height: vpHeight,
         display: 'flex',
         flexDirection: 'column',
-        width: '100vw',
-        height: '100dvh',
         overflow: 'hidden',
         fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
       }}>
-        {/* QR canvas — top 52% */}
-        <div style={{ position: 'relative', height: '52dvh', flexShrink: 0 }}>
+        {/* QR canvas — top 52% of actual visible height */}
+        <div style={{ position: 'relative', height: canvasH, flexShrink: 0 }}>
           {errorContent || (
             <QraftCanvas url={url} style={style} onWebGPUUnsupported={onUnsupported} />
           )}
