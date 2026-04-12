@@ -20,7 +20,6 @@ struct FragIn {
   @location(5) faceNz: f32,
   @location(6) blockType: f32,
   @location(7) uv: vec2f,
-  @location(8) distFromCenter: f32,
 }
 
 const SUN_COL:  vec3f = vec3f(${p.sun.r}, ${p.sun.g}, ${p.sun.b});

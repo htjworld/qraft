@@ -27,18 +27,3 @@ fn blockNoise3(col: f32, row: f32, layer: f32) -> vec3f {
   return vec3f(n1, n2, n3);
 }
 `;
-
-export const commonLighting = /* wgsl */`
-fn computeLighting(albedo: vec3f, N: vec3f) -> vec3f {
-  let sunDir = normalize(vec3f(-0.5, 0.8, -0.5));
-  let sunCol = vec3f(1.15, 1.05, 0.95);
-  let ambient = vec3f(0.35, 0.38, 0.45);
-  let skyFill = vec3f(0.85, 0.9, 0.95);
-  let bounce = vec3f(0.5, 0.65, 0.42);
-  let NdSun = max(dot(N, sunDir), 0.0);
-  let NdUp = max(dot(N, vec3f(0.0, 1.0, 0.0)), 0.0);
-  let diffuse = albedo * (ambient + sunCol * NdSun * 0.65 + skyFill * NdUp * 0.25 + bounce * 0.2);
-  var hdr = acesFilm(diffuse * 1.05);
-  return pow(hdr, vec3f(1.0 / 2.2));
-}
-`;

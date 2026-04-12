@@ -4,7 +4,8 @@
       "Bash(gh run:*)",
       "Bash(./node_modules/.bin/tsc --version)",
       "Bash(npm run:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(grep:*)"
     ]
   }
 }

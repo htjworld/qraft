@@ -15,10 +15,6 @@ export function getInitialStyle(): QraftStyle {
   return STYLES[Math.floor(Math.random() * STYLES.length)];
 }
 
-export function getStyleById(id: string): QraftStyle {
-  return STYLES.find(s => s.id === id) ?? STYLES[0];
-}
-
 export function getAllStyles(): QraftStyle[] {
   return STYLES;
 }

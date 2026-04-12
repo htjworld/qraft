@@ -1,9 +1,3 @@
-export interface RGB {
-  r: number;
-  g: number;
-  b: number;
-}
-
 export interface BlockData {
   positions: number[];  // [col, row, 0, 0] × N (vec4f 정렬)
   heights: number[];    // 블록 높이 × N
