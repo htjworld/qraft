@@ -5,14 +5,14 @@ import { winterTreeStyle } from './winter-tree';
 import type { QraftStyle } from './types';
 
 const STYLES: QraftStyle[] = [
-  cherryBlossomStyle,
   springTreeStyle,
+  cherryBlossomStyle,
   autumnTreeStyle,
   winterTreeStyle,
 ];
 
 export function getInitialStyle(): QraftStyle {
-  return STYLES[0];
+  return STYLES[Math.floor(Math.random() * STYLES.length)];
 }
 
 export function getStyleById(id: string): QraftStyle {
