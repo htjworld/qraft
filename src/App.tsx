@@ -90,6 +90,7 @@ export function App() {
           alignItems: 'flex-start',
           justifyContent: 'center',
           padding: '20px 16px 0',
+          overflow: 'hidden',
         }}>
           <UrlInput onChange={handleUrlChange} />
         </div>
